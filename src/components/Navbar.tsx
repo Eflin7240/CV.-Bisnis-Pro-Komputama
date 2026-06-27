@@ -63,7 +63,7 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 flex-shrink-0">
           <img
-            src="/Logo.png"
+            src={`${import.meta.env.BASE_URL}Logo.png`}
             alt="CV. Bisnis Pro Komputama"
             className="h-9 w-auto object-contain"
           />

@@ -51,7 +51,7 @@ export default function About() {
           <div className="flex-shrink-0">
             <div className="w-40 h-40 rounded-2xl bg-white flex items-center justify-center p-4 shadow-xl">
               <img
-                src="/Logo.png"
+                src={`${import.meta.env.BASE_URL}Logo.png`}
                 alt="CV. Bisnis Pro Komputama"
                 className="w-full h-full object-contain"
               />

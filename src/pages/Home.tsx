@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const WA_NUMBER = '6282348437157'
+const baseUrl = import.meta.env.BASE_URL
 
 const partnerLogos = [
-  { src: '/Asus.png', alt: 'ASUS' },
-  { src: '/epson.png', alt: 'Epson' },
-  { src: '/Canon.png', alt: 'Canon' },
-  { src: '/Samsung.png', alt: 'Samsung' },
-  { src: '/Brother.png', alt: 'Brother' },
-  { src: '/Acer.png', alt: 'Acer' },
-  { src: '/LG.png', alt: 'LG' },
-  { src: '/Telkom.png', alt: 'Telkom' },
+  { src: `${baseUrl}Asus.png`, alt: 'ASUS' },
+  { src: `${baseUrl}epson.png`, alt: 'Epson' },
+  { src: `${baseUrl}Canon.png`, alt: 'Canon' },
+  { src: `${baseUrl}Samsung.png`, alt: 'Samsung' },
+  { src: `${baseUrl}Brother.png`, alt: 'Brother' },
+  { src: `${baseUrl}Acer.png`, alt: 'Acer' },
+  { src: `${baseUrl}LG.png`, alt: 'LG' },
+  { src: `${baseUrl}Telkom.png`, alt: 'Telkom' },
 ]
 
 type Product = {
@@ -66,7 +67,7 @@ export default function Home() {
         className="px-6 md:px-12 py-12 md:py-16 flex flex-col md:flex-row items-center gap-8 md:gap-12 min-h-[320px] md:min-h-[380px] relative overflow-hidden"
         style={{
           backgroundImage:
-            "linear-gradient(to right, #18181B 40%, rgba(13,26,42,0.5) 70%, transparent 100%), url('/hero-bg.png')",
+            `linear-gradient(to right, #18181B 40%, rgba(13,26,42,0.5) 70%, transparent 100%), url('${baseUrl}hero-bg.png')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center right',
           backgroundRepeat: 'no-repeat',
