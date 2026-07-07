@@ -131,7 +131,7 @@ export default function ProductModal({ product, onClose }: Props) {
                 rel="noreferrer"
                 className="w-full h-11 rounded-xl bg-[#25D366] hover:bg-[#20BD5C] text-white font-medium text-sm flex items-center justify-center gap-2 transition-colors"
               >
-                💬 Buy via WhatsApp
+                Buy via WhatsApp
               </a>
             ) : (
               <button
