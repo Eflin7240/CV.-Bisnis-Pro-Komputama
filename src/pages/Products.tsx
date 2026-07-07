@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import ProductCard from '../components/ProductCard'
+import ProductModal from '../components/ProductModal'
 import { supabase } from '../lib/supabase'
 
 const WA_NUMBER = '6282348437157'
@@ -11,6 +13,7 @@ type Product = {
   selling_price: number
   photo_url: string | null
   in_stock: boolean
+  description: string | null  
 }
 
 const categories = ['Semua', 'Elektronik', 'Gadget']
@@ -25,6 +28,7 @@ export default function Products() {
   const [minPrice, setMinPrice] = useState('')
   const [maxPrice, setMaxPrice] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   useEffect(() => {
     fetchProducts()
@@ -234,64 +238,24 @@ export default function Products() {
               <div className="text-sm">Produk tidak ditemukan</div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-[#1F1F23] border border-[#2E2E33] rounded-xl overflow-hidden hover:border-[#3F3F46] transition-colors"
-                >
-                  <div className="h-40 bg-[#27272A] flex items-center justify-center relative overflow-hidden">
-                    {product.photo_url ? (
-                      <img
-                        src={product.photo_url}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-4xl">🖥️</span>
-                    )}
-                    <span
-                      className={`absolute top-2 left-2 text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                        product.in_stock
-                          ? 'bg-[#1B6CA8] text-white'
-                          : 'bg-[#3F3F46] text-[#A1A1AA]'
-                      }`}
-                    >
-                      {product.in_stock ? 'Tersedia' : 'Stok Habis'}
-                    </span>
-                  </div>
-                  <div className="p-3">
-                    <div className="text-[#71717A] text-[10px] uppercase tracking-wider mb-1">
-                      {product.category}
-                    </div>
-                    <div className="text-white text-sm font-medium mb-0.5 truncate">
-                      {product.name}
-                    </div>
-                    <div className="text-[#52525B] text-xs mb-2">{product.brand}</div>
-                    <div className="text-[#F5B800] font-semibold text-base mb-3">
-                      {formatPrice(product.selling_price)}
-                    </div>
-                    {product.in_stock ? (
-                      <a
-                        href={waMessage(product.name, product.selling_price)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="w-full h-9 rounded-md text-xs font-medium flex items-center justify-center gap-1 bg-[#25D366] hover:bg-[#20BD5C] text-white transition-colors"
-                      >
-                        Buy via WhatsApp
-                      </a>
-                    ) : (
-                      <button
-                        disabled
-                        className="w-full h-9 rounded-md text-xs font-medium flex items-center justify-center bg-[#2E2E33] text-[#52525B] cursor-not-allowed"
-                      >
-                        Stok Habis
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filtered.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onView={setSelectedProduct}
+                    formatPrice={formatPrice}
+                    waMessage={waMessage}
+                  />
+                ))}
+              </div>
+
+              <ProductModal
+                product={selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+              />
+            </>
           )}
         </div>
       </div>
