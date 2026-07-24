@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
-import { supabase } from '../lib/supabase'
+import api from '../lib/api'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const WA_NUMBER = '6282348437157'
 
@@ -16,7 +18,6 @@ type Product = {
   description: string | null  
 }
 
-const categories = ['Semua', 'Elektronik', 'Gadget']
 
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([])
@@ -36,18 +37,32 @@ export default function Products() {
 
   const fetchProducts = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('web_products')
-      .select('*')
-      .order('updated_at', { ascending: false })
 
-    if (error) {
+    try {
+      const response = await api.get('/api/products?show_on_web=1')
+      const data = Array.isArray(response.data) ? response.data : []
+
+      const mappedProducts = data.map((item: any) => ({
+        id: String(item.id),
+        name: item.name,
+        category: item.category_name || item.category || 'Umum',
+        brand: item.brand || '-',
+        selling_price: Number(item.selling_price || 0),
+        photo_url: item.photo_url ? `${API_BASE_URL}${item.photo_url}` : null,
+        in_stock: Number(item.stock_qty || 0) > 0,
+        description: item.description || null,
+      }))
+
+      setProducts(mappedProducts)
+    } catch (error) {
       console.error('Error fetching products:', error)
-    } else {
-      setProducts(data || [])
+      setProducts([])
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
+
+  const categories = ['Semua', ...new Set(products.map((product) => product.category).filter(Boolean))]
 
   const filtered = products
     .filter((p) => {

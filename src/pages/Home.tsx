@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import api from '../lib/api'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const WA_NUMBER = '6282348437157'
 const baseUrl = import.meta.env.BASE_URL
@@ -40,18 +42,39 @@ export default function Home() {
 
   const fetchLatestProducts = async () => {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('web_products')
-      .select('*')
-      .order('updated_at', { ascending: false })
-      .limit(6)
 
-    if (error) {
-      console.error('Error:', error)
-    } else {
-      setProducts(data || [])
+    try {
+      const response = await api.get('/api/products?show_on_web=1')
+      const payload = response.data
+      const data = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+        ? payload.data
+        : []
+
+      const mappedProducts = data.slice(0, 6).map((item: any) => {
+        const photoPath =
+          item.photo_url || item.photos?.[0]?.photo_url || null
+
+        return {
+          id: String(item.id),
+          name: String(item.name || 'Produk tanpa nama'),
+          category: String(item.category_name || item.category || 'Umum'),
+          brand: String(item.brand || '-'),
+          selling_price: Number(item.selling_price || 0),
+          photo_url: photoPath ? `${API_BASE_URL}${photoPath}` : null,
+          in_stock: Number(item.stock_qty || 0) > 0,
+          description: item.description ?? null,
+        }
+      })
+
+      setProducts(mappedProducts)
+    } catch (error) {
+      console.error('Error fetching products:', error)
+      setProducts([])
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const formatPrice = (price: number) =>
