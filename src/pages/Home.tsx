@@ -51,7 +51,9 @@ export default function Home() {
 
       const mappedProducts = data.slice(0, 3).map((item: any) => {
         const photos: string[] = Array.isArray(item.photos) && item.photos.length > 0
-          ? item.photos.map((photo: any) => photo.photo_url)
+          ? (typeof item.photos[0] === 'string'
+              ? item.photos
+              : item.photos.map((photo: any) => photo.photo_url))
           : []
 
         return {

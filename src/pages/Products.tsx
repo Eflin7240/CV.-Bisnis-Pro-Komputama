@@ -54,7 +54,7 @@ export default function Products() {
         brand: item.brand || '-',
         selling_price: Number(item.selling_price || 0),
         photos: Array.isArray(item.photos) && item.photos.length > 0
-          ? item.photos.map((photo: any) => photo.photo_url)
+          ? (typeof item.photos[0] === 'string' ? item.photos : item.photos.map((photo: any) => photo.photo_url))
           : [],
         in_stock: Number(item.stock_qty || 0) > 0,
         description: item.description || null,
