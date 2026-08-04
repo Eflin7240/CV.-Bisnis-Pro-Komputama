@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import api from '../lib/api'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 
@@ -42,8 +43,8 @@ export default function Products() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/products')
-      const data = await response.json()
+      const response = await api.get('/products')
+      const data = response.data
       const list = Array.isArray(data) ? data : []
 
       const mappedProducts = list.map((item: any) => ({

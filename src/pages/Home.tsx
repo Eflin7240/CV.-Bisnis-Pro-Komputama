@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import api from '../lib/api'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 import { Link } from 'react-router-dom'
@@ -42,8 +43,8 @@ export default function Home() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/products')
-      const payload = await response.json()
+      const response = await api.get('/products')
+      const payload = response.data
       const data = Array.isArray(payload) ? payload : []
 
       setTotalCount(data.length)
