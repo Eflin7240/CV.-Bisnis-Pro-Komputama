@@ -26,6 +26,8 @@ export default async function handler(
           photos: Array.isArray(item.product_photos)
             ? item.product_photos.map((photo: any) => photo.photo_url)
             : [],
+          // keep raw product_photos for debugging client-side
+          product_photos_raw: Array.isArray(item.product_photos) ? item.product_photos : [],
           category_name: item.categories?.name || null,
         }))
       : data;
