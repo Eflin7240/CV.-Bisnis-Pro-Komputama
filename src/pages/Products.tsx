@@ -13,7 +13,7 @@ type Product = {
   category: string
   brand: string
   selling_price: number
-  photo_url: string | null
+  photos: string[]
   in_stock: boolean
   description: string | null  
 }
@@ -30,10 +30,16 @@ export default function Products() {
   const [maxPrice, setMaxPrice] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 9
 
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search, activeCategory, sortBy, onlyStock, minPrice, maxPrice])
 
   const fetchProducts = async () => {
     setLoading(true)
@@ -48,7 +54,11 @@ export default function Products() {
         category: item.category_name || item.category || 'Umum',
         brand: item.brand || '-',
         selling_price: Number(item.selling_price || 0),
-        photo_url: item.photo_url ? `${API_BASE_URL}${item.photo_url}` : null,
+        photos: Array.isArray(item.photos) && item.photos.length > 0
+          ? item.photos.map((photo: any) => `${API_BASE_URL}${photo.photo_url}`)
+          : item.photo_url
+          ? [`${API_BASE_URL}${item.photo_url}`]
+          : [],
         in_stock: Number(item.stock_qty || 0) > 0,
         description: item.description || null,
       }))
@@ -81,6 +91,29 @@ export default function Products() {
       if (sortBy === 'nama') return a.name.localeCompare(b.name)
       return 0
     })
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage))
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  const getPageNumbers = () => {
+    const pages: (number | '...')[] = []
+    const windowSize = 1
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - windowSize && i <= currentPage + windowSize)) {
+        pages.push(i)
+      } else if (pages[pages.length - 1] !== '...') {
+        pages.push('...')
+      }
+    }
+
+    return pages
+  }
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('id-ID', {
@@ -255,7 +288,7 @@ export default function Products() {
           ) : (
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filtered.map((product) => (
+                {paginated.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -265,6 +298,50 @@ export default function Products() {
                   />
                 ))}
               </div>
+
+              {totalPages > 1 && (
+                <div className="flex flex-wrap items-center justify-center gap-2 mt-8">
+                  <span className="text-[#71717A] text-xs mr-2">
+                    Page {currentPage} of {totalPages}
+                  </span>
+
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="w-8 h-8 rounded-md border border-[#2E2E33] bg-[#1F1F23] text-[#A1A1AA] flex items-center justify-center text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:text-white transition-colors"
+                  >
+                    ‹
+                  </button>
+
+                  {getPageNumbers().map((page, idx) =>
+                    page === '...' ? (
+                      <span key={`ellipsis-${idx}`} className="text-[#52525B] text-xs px-1">
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${
+                          currentPage === page
+                            ? 'bg-[#1B6CA8] text-white'
+                            : 'border border-[#2E2E33] bg-[#1F1F23] text-[#A1A1AA] hover:text-white'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="w-8 h-8 rounded-md border border-[#2E2E33] bg-[#1F1F23] text-[#A1A1AA] flex items-center justify-center text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:text-white transition-colors"
+                  >
+                    ›
+                  </button>
+                </div>
+              )}
 
               <ProductModal
                 product={selectedProduct}

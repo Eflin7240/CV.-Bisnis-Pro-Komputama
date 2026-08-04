@@ -1,12 +1,24 @@
 import { useState } from 'react'
 
+const ChevronLeft = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+)
+
+const ChevronRight = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+)
+
 type Product = {
   id: string
   name: string
   category: string
   brand: string
   selling_price: number
-  photo_url: string | null
+  photos: string[]
   in_stock: boolean
   description: string | null
 }
@@ -20,6 +32,20 @@ type Props = {
 
 export default function ProductCard({ product, onView, formatPrice, waMessage }: Props) {
   const [hovered, setHovered] = useState(false)
+  const [photoIndex, setPhotoIndex] = useState(0)
+
+  const photos = product.photos && product.photos.length > 0 ? product.photos : []
+  const hasMultiplePhotos = photos.length > 1
+
+  const goPrev = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setPhotoIndex(prev => (prev === 0 ? photos.length - 1 : prev - 1))
+  }
+
+  const goNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setPhotoIndex(prev => (prev === photos.length - 1 ? 0 : prev + 1))
+  }
 
   return (
     <div
@@ -32,9 +58,9 @@ export default function ProductCard({ product, onView, formatPrice, waMessage }:
         onMouseLeave={() => setHovered(false)}
         onClick={() => onView(product)}
       >
-        {product.photo_url ? (
+        {photos.length > 0 ? (
           <img
-            src={product.photo_url}
+            src={photos[photoIndex]}
             alt={product.name}
             className="w-full h-full object-cover"
           />
@@ -55,6 +81,35 @@ export default function ProductCard({ product, onView, formatPrice, waMessage }:
         }`}>
           {product.in_stock ? 'Tersedia' : 'Stok Habis'}
         </span>
+
+        {/* Navigasi geser foto — cuma muncul kalau foto lebih dari satu */}
+        {hasMultiplePhotos && (
+          <>
+            <button
+              onClick={goPrev}
+              className={`absolute left-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-opacity duration-200 z-10 ${hovered ? 'opacity-100' : 'opacity-0'}`}
+            >
+              <ChevronLeft size={14} className="text-white" />
+            </button>
+            <button
+              onClick={goNext}
+              className={`absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/50 hover:bg-black/70 flex items-center justify-center transition-opacity duration-200 z-10 ${hovered ? 'opacity-100' : 'opacity-0'}`}
+            >
+              <ChevronRight size={14} className="text-white" />
+            </button>
+
+            {/* Dots indikator */}
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+              {photos.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => { e.stopPropagation(); setPhotoIndex(idx) }}
+                  className={`w-1.5 h-1.5 rounded-full transition-colors ${idx === photoIndex ? 'bg-white' : 'bg-white/40'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Info */}

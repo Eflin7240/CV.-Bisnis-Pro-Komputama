@@ -1,4 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
+const ChevronLeft = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+)
+
+const ChevronRight = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+)
 
 const WA_NUMBER = '6282348437157'
 
@@ -8,7 +20,7 @@ type Product = {
   category: string
   brand: string
   selling_price: number
-  photo_url: string | null
+  photos: string[]
   in_stock: boolean
   description: string | null
 }
@@ -19,6 +31,8 @@ type Props = {
 }
 
 export default function ProductModal({ product, onClose }: Props) {
+  const [photoIndex, setPhotoIndex] = useState(0)
+
   const formatPrice = (price: number) =>
     new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -48,7 +62,25 @@ export default function ProductModal({ product, onClose }: Props) {
     return () => { document.body.style.overflow = '' }
   }, [product])
 
+  // Reset ke foto pertama tiap kali produk yang ditampilkan berganti
+  useEffect(() => {
+    setPhotoIndex(0)
+  }, [product?.id])
+
   if (!product) return null
+
+  const photos = product.photos && product.photos.length > 0 ? product.photos : []
+  const hasMultiplePhotos = photos.length > 1
+
+  const goPrev = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setPhotoIndex(prev => (prev === 0 ? photos.length - 1 : prev - 1))
+  }
+
+  const goNext = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setPhotoIndex(prev => (prev === photos.length - 1 ? 0 : prev + 1))
+  }
 
   return (
     <div
@@ -73,15 +105,44 @@ export default function ProductModal({ product, onClose }: Props) {
 
         <div className="flex flex-col md:flex-row">
           {/* Foto produk */}
-          <div className="w-full md:w-[320px] h-64 md:h-auto bg-[#f7f7f5] flex items-center justify-center flex-shrink-0">
-            {product.photo_url ? (
+          <div className="w-full md:w-[320px] h-64 md:h-auto bg-[#f7f7f5] flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+            {photos.length > 0 ? (
               <img
-                src={product.photo_url}
+                src={photos[photoIndex]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
               <span className="text-6xl">🖥️</span>
+            )}
+
+            {/* Navigasi geser foto — cuma muncul kalau foto lebih dari satu */}
+            {hasMultiplePhotos && (
+              <>
+                <button
+                  onClick={goPrev}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors z-10"
+                >
+                  <ChevronLeft size={16} className="text-white" />
+                </button>
+                <button
+                  onClick={goNext}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center transition-colors z-10"
+                >
+                  <ChevronRight size={16} className="text-white" />
+                </button>
+
+                {/* Dots indikator */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                  {photos.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => { e.stopPropagation(); setPhotoIndex(idx) }}
+                      className={`w-2 h-2 rounded-full transition-colors ${idx === photoIndex ? 'bg-white' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
 

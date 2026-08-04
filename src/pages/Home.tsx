@@ -26,13 +26,14 @@ type Product = {
   category: string
   brand: string
   selling_price: number
-  photo_url: string | null
+  photos: string[]
   in_stock: boolean
   description: string | null
 }
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
+  const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
@@ -52,9 +53,14 @@ export default function Home() {
         ? payload.data
         : []
 
-      const mappedProducts = data.slice(0, 6).map((item: any) => {
-        const photoPath =
-          item.photo_url || item.photos?.[0]?.photo_url || null
+      setTotalCount(data.length)
+
+      const mappedProducts = data.slice(0, 3).map((item: any) => {
+        const photos: string[] = Array.isArray(item.photos) && item.photos.length > 0
+          ? item.photos.map((photo: any) => `${API_BASE_URL}${photo.photo_url}`)
+          : item.photo_url
+          ? [`${API_BASE_URL}${item.photo_url}`]
+          : []
 
         return {
           id: String(item.id),
@@ -62,7 +68,7 @@ export default function Home() {
           category: String(item.category_name || item.category || 'Umum'),
           brand: String(item.brand || '-'),
           selling_price: Number(item.selling_price || 0),
-          photo_url: photoPath ? `${API_BASE_URL}${photoPath}` : null,
+          photos,
           in_stock: Number(item.stock_qty || 0) > 0,
           description: item.description ?? null,
         }
@@ -140,7 +146,7 @@ export default function Home() {
             </div>
             <div>
               <div className="text-white font-semibold text-base md:text-lg">
-                {loading ? '...' : `${products.length}+`}
+                {loading ? '...' : `${totalCount}+`}
               </div>
               <div className="text-[#71717A] text-xs">Produk tersedia</div>
             </div>
