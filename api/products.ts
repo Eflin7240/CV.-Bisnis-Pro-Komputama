@@ -20,7 +20,17 @@ export default async function handler(
       throw error;
     }
 
-    res.status(200).json(data);
+    const mappedData = Array.isArray(data)
+      ? data.map((item: any) => ({
+          ...item,
+          photos: Array.isArray(item.product_photos)
+            ? item.product_photos.map((photo: any) => photo.photo_url)
+            : [],
+          category_name: item.categories?.name || null,
+        }))
+      : data;
+
+    res.status(200).json(mappedData);
   } catch (err) {
     console.error(err);
 
