@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
-import api from '../lib/api'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const WA_NUMBER = '6282348437157'
 
@@ -45,19 +42,18 @@ export default function Products() {
     setLoading(true)
 
     try {
-      const response = await api.get('/api/products?show_on_web=1')
-      const data = Array.isArray(response.data) ? response.data : []
+      const response = await fetch('/api/products')
+      const data = await response.json()
+      const list = Array.isArray(data) ? data : []
 
-      const mappedProducts = data.map((item: any) => ({
+      const mappedProducts = list.map((item: any) => ({
         id: String(item.id),
         name: item.name,
         category: item.category_name || item.category || 'Umum',
         brand: item.brand || '-',
         selling_price: Number(item.selling_price || 0),
         photos: Array.isArray(item.photos) && item.photos.length > 0
-          ? item.photos.map((photo: any) => `${API_BASE_URL}${photo.photo_url}`)
-          : item.photo_url
-          ? [`${API_BASE_URL}${item.photo_url}`]
+          ? item.photos.map((photo: any) => photo.photo_url)
           : [],
         in_stock: Number(item.stock_qty || 0) > 0,
         description: item.description || null,

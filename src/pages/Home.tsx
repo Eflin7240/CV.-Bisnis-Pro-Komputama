@@ -2,9 +2,6 @@ import { useState, useEffect } from 'react'
 import ProductCard from '../components/ProductCard'
 import ProductModal from '../components/ProductModal'
 import { Link } from 'react-router-dom'
-import api from '../lib/api'
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const WA_NUMBER = '6282348437157'
 const baseUrl = import.meta.env.BASE_URL
@@ -45,21 +42,15 @@ export default function Home() {
     setLoading(true)
 
     try {
-      const response = await api.get('/api/products?show_on_web=1')
-      const payload = response.data
-      const data = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.data)
-        ? payload.data
-        : []
+      const response = await fetch('/api/products')
+      const payload = await response.json()
+      const data = Array.isArray(payload) ? payload : []
 
       setTotalCount(data.length)
 
       const mappedProducts = data.slice(0, 3).map((item: any) => {
         const photos: string[] = Array.isArray(item.photos) && item.photos.length > 0
-          ? item.photos.map((photo: any) => `${API_BASE_URL}${photo.photo_url}`)
-          : item.photo_url
-          ? [`${API_BASE_URL}${item.photo_url}`]
+          ? item.photos.map((photo: any) => photo.photo_url)
           : []
 
         return {
